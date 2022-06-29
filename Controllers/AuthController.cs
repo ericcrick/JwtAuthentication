@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using JwtAuthentication.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JwtAuthentication.Controllers
 {
@@ -18,20 +19,26 @@ namespace JwtAuthentication.Controllers
             _configuration = configuration;
         }
 
-    [HttpPost("login")]
-    public ActionResult LoginUser(UserDto user){
-        var authClaims = new List<Claim>(){
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim("Id", "1"),
-        };
-        var token = this.GetToken(authClaims);
-        return Ok(
-            new {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                expiration = token.ValidTo
-            }
-        );
-    }
+        [HttpPost("login")]
+        public ActionResult LoginUser(UserDto user){
+            var authClaims = new List<Claim>(){
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim("Id", "1"),
+            };
+            var token = this.GetToken(authClaims);
+            return Ok(
+                new {
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    expiration = token.ValidTo
+                }
+            );
+        }
+        // get home endpoint
+        [Authorize]
+        [HttpGet("home")]
+        public ActionResult<string> GetHome(){
+            return Ok("Welcome Home");
+        }
         // create jwt token
         private JwtSecurityToken GetToken( List<Claim> authClaims){
             var authSignInKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
