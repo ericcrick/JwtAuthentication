@@ -1,7 +1,9 @@
-using System.Security.Cryptography;
-using JwtAuthentication.Dtos;
-using JwtAuthentication.Models;
+using System.Security.Claims;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using JwtAuthentication.Dtos;
 
 namespace JwtAuthentication.Controllers
 {
@@ -9,24 +11,38 @@ namespace JwtAuthentication.Controllers
     [ApiController]
     public class AuthController: ControllerBase
     {
-        public static  User user = new User();
-
-        [HttpPost("register")]
-        public async Task<ActionResult<User>>Register(UserDto request){
-            CreatePasswordHash(
-                request.Password, out byte[] passwordHash, out byte[] passwordSalt
-            );
-            user.Username = request.Username;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-            return Ok(user);
+        private readonly IConfiguration _configuration;
+        public AuthController(IConfiguration configuration)
+        {
+            // injecting configuration
+            _configuration = configuration;
         }
 
-        private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt){
-            using (var hmac = new HMACSHA512()){
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+    [HttpPost("login")]
+    public ActionResult LoginUser(UserDto user){
+        var authClaims = new List<Claim>(){
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim("Id", "1"),
+        };
+        var token = this.GetToken(authClaims);
+        return Ok(
+            new {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                expiration = token.ValidTo
             }
+        );
+    }
+        // create jwt token
+        private JwtSecurityToken GetToken( List<Claim> authClaims){
+            var authSignInKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JWT:Issuer"],
+                audience: _configuration["JWT:Audience"],
+                expires: DateTime.UtcNow.AddHours(24),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSignInKey, SecurityAlgorithms.HmacSha256)
+            );
+            return token;
         }
     }
 }
