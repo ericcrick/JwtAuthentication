@@ -9,5 +9,8 @@ namespace JwtAuthentication.Data
         {
         }
         public DbSet<User> Users {get; set;} = null!;
+        protected override void OnModelCreating(ModelBuilder modelBuilder){
+            modelBuilder.Entity<User>(entity => entity.HasIndex(e => e.Email).IsUnique());
+        }
     }
 }
