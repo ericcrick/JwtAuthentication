@@ -11,22 +11,28 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // adding authentication schemes
-builder.Services.AddAuthentication(options=> {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options=>{
-    options.SaveToken = true;
-    options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new TokenValidationParameters{
-        ValidateAudience = true,
-        ValidateIssuer = true,
-        ValidAudience = builder.Configuration["JWT:ValidAudience"],
-        ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
-    };
-});
+// builder.Services.AddAuthentication(options=> {
+//     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+// })
+// .AddJwtBearer(options=>{
+//     options.SaveToken = true;
+//     options.RequireHttpsMetadata = false;
+//     options.TokenValidationParameters = new TokenValidationParameters{
+//         ValidateAudience = true,
+//         ValidateIssuer = true,
+//         ValidAudience = builder.Configuration["JWT:ValidAudience"],
+//         ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+//         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+//     };
+// });
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
+    options=>{
+        options.Audience = builder.Configuration["JWT:Audience"];
+        options.Authority = $"{builder.Configuration["JWT:Issuer"]}{builder.Configuration["JWT:Secret"]}";
+    }
+);
 
 var app = builder.Build();
 
