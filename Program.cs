@@ -1,5 +1,6 @@
 using System.Text;
 using JwtAuthentication.Data;
+using JwtAuthentication.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +15,7 @@ builder.Services.AddSwaggerGen();
 
 // register db context
 builder.Services.AddDbContext<UserDbContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDbConnection")));
+builder.Services.AddScoped<IUserRepository,UserRepository>();
 
 // adding authentication schemes
 // builder.Services.AddAuthentication(options=> {
