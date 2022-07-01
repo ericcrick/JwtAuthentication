@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using JwtAuthentication.Dtos;
 using Microsoft.AspNetCore.Authorization;
+using JwtAuthentication.Repositories;
+using JwtAuthentication.Models;
 
 namespace JwtAuthentication.Controllers
 {
@@ -13,14 +15,25 @@ namespace JwtAuthentication.Controllers
     public class AuthController: ControllerBase
     {
         private readonly IConfiguration _configuration;
-        public AuthController(IConfiguration configuration)
+        private readonly IUserRepository _userRepository;
+        public AuthController(IConfiguration configuration, IUserRepository userRepository)
         {
             // injecting configuration
             _configuration = configuration;
+            _userRepository = userRepository;
         }
-
+        [HttpPost("register")]
+        public async Task<ActionResult<User>> RegisterUser(CreateUserDto userDto){
+            var user = new User(){
+                Username = userDto.Username,
+                Email = userDto.Email,
+                Password = userDto.Password
+            };
+            await _userRepository.Create(user);
+            return user;
+        }
         [HttpPost("login")]
-        public ActionResult LoginUser(UserDto user){
+        public ActionResult LoginUser(CreateUserDto user){
             var authClaims = new List<Claim>(){
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim("Id", "1"),
@@ -33,13 +46,12 @@ namespace JwtAuthentication.Controllers
                 }
             );
         }
-        // get home endpoint
         [Authorize]
         [HttpGet("home")]
         public ActionResult<string> GetHome(){
-            return Ok("Welcome Home");
+            return "Hello";
         }
-        // create jwt token
+
         private JwtSecurityToken GetToken( List<Claim> authClaims){
             var authSignInKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
             var token = new JwtSecurityToken(
