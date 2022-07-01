@@ -17,5 +17,17 @@ namespace JwtAuthentication.Helpers
 
             return new JwtSecurityTokenHandler().WriteToken(securityToken);
         }
+        public JwtSecurityToken VerifyToken(string token){
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(securityKey);
+
+            tokenHandler.ValidateToken(token, new TokenValidationParameters{
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = false,
+                ValidateAudience = false
+            }, out SecurityToken validatedToken);
+            return (JwtSecurityToken)validatedToken;
+        }
     }
 }
