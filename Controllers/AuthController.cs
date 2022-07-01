@@ -45,6 +45,5 @@ namespace JwtAuthentication.Controllers
             }
             return Ok(user);
         }
-
     }
 }
