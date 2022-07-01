@@ -22,46 +22,43 @@ namespace JwtAuthentication.Controllers
             _configuration = configuration;
             _userRepository = userRepository;
         }
+        // register new user
         [HttpPost("register")]
-        public async Task<ActionResult<User>> RegisterUser(CreateUserDto userDto){
+        public async Task<ActionResult<ReadUserDto>> RegisterUser(CreateUserDto userDto){
             var user = new User(){
                 Username = userDto.Username,
                 Email = userDto.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password)
             };
             await _userRepository.Create(user);
-            return user;
+            return CreatedAtAction("New user created",user);
         }
-        [HttpPost("login")]
-        public ActionResult LoginUser(CreateUserDto user){
-            var authClaims = new List<Claim>(){
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim("Id", "1"),
+        [HttpGet("find/{id}")]
+        public async Task<ActionResult<ReadUserDto>> FindById(int id){
+            var user = await _userRepository.FindById(id);
+            if(user == null) return NotFound("User not found");
+            return new ReadUserDto(){
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email
             };
-            var token = this.GetToken(authClaims);
-            return Ok(
-                new {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    expiration = token.ValidTo
-                }
-            );
         }
-        [Authorize]
-        [HttpGet("home")]
-        public ActionResult<string> GetHome(){
-            return "Hello";
+        // login user
+        [HttpPost("login")]
+        public async Task<ActionResult<string>> LogInUser(LogInUserDto logInUserDto){
+            return $"Login{logInUserDto}";
         }
 
-        private JwtSecurityToken GetToken( List<Claim> authClaims){
-            var authSignInKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-            var token = new JwtSecurityToken(
-                issuer: _configuration["JWT:Issuer"],
-                audience: _configuration["JWT:Audience"],
-                expires: DateTime.UtcNow.AddHours(24),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(authSignInKey, SecurityAlgorithms.HmacSha256)
-            );
-            return token;
-        }
+        // private JwtSecurityToken GetToken( List<Claim> authClaims){
+        //     var authSignInKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+        //     var token = new JwtSecurityToken(
+        //         issuer: _configuration["JWT:Issuer"],
+        //         audience: _configuration["JWT:Audience"],
+        //         expires: DateTime.UtcNow.AddHours(24),
+        //         claims: authClaims,
+        //         signingCredentials: new SigningCredentials(authSignInKey, SecurityAlgorithms.HmacSha256)
+        //     );
+        //     return token;
+        // }
     }
 }
