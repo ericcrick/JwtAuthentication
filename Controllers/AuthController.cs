@@ -56,7 +56,9 @@ namespace JwtAuthentication.Controllers
             Response.Cookies.Append("jwt", token, new CookieOptions{
                 HttpOnly = true
             });
-            return Ok(token);
+            return Ok(new {
+                message = "Login Successfully"
+            });
         }
 
         [HttpGet("user")]
