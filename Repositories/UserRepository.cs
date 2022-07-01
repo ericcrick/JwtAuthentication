@@ -22,5 +22,9 @@ namespace JwtAuthentication.Repositories
             var user = await _usercontext.Users.FirstOrDefaultAsync( user => user.Id == id);
             return user!;
         }
+        public async Task<User>GetByEmail(string email){
+            var user = await _usercontext.Users.FirstOrDefaultAsync(user => user.Email == email);
+            return user!;
+        }
     }
 }

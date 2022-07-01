@@ -1,10 +1,5 @@
-using System.Security.Claims;
-using System.Text;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using JwtAuthentication.Dtos;
-using Microsoft.AspNetCore.Authorization;
 using JwtAuthentication.Repositories;
 using JwtAuthentication.Models;
 
@@ -14,12 +9,9 @@ namespace JwtAuthentication.Controllers
     [ApiController]
     public class AuthController: ControllerBase
     {
-        private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
-        public AuthController(IConfiguration configuration, IUserRepository userRepository)
+        public AuthController(IUserRepository userRepository)
         {
-            // injecting configuration
-            _configuration = configuration;
             _userRepository = userRepository;
         }
         // register new user
@@ -45,20 +37,14 @@ namespace JwtAuthentication.Controllers
         }
         // login user
         [HttpPost("login")]
-        public async Task<ActionResult<string>> LogInUser(LogInUserDto logInUserDto){
-            return $"Login{logInUserDto}";
+        public async Task<ActionResult<ReadUserDto>> LogInUser(LogInUserDto logInUserDto){
+            var user = await _userRepository.GetByEmail(logInUserDto.Email);
+            if(user == null) return BadRequest( new { message = "Invalid Credentials"});
+            if(!BCrypt.Net.BCrypt.Verify(logInUserDto.Password, user.Password)){
+                return BadRequest( new { message = "Invalid Credentials"});
+            }
+            return Ok(user);
         }
 
-        // private JwtSecurityToken GetToken( List<Claim> authClaims){
-        //     var authSignInKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-        //     var token = new JwtSecurityToken(
-        //         issuer: _configuration["JWT:Issuer"],
-        //         audience: _configuration["JWT:Audience"],
-        //         expires: DateTime.UtcNow.AddHours(24),
-        //         claims: authClaims,
-        //         signingCredentials: new SigningCredentials(authSignInKey, SecurityAlgorithms.HmacSha256)
-        //     );
-        //     return token;
-        // }
     }
 }

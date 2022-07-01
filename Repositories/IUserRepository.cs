@@ -6,5 +6,6 @@ namespace JwtAuthentication.Repositories
     {
         Task<User> Create(User user);
         Task<User> FindById(int id);
+        Task<User> GetByEmail(string email);
     }
 }
