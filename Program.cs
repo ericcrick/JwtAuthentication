@@ -14,6 +14,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// add cors
+builder.Services.AddCors();
+
 // register db context
 builder.Services.AddDbContext<UserDbContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDbConnection")));
 builder.Services.AddScoped<IUserRepository,UserRepository>();
@@ -29,6 +32,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(options => options
+.AllowAnyHeader()
+.AllowAnyMethod()
+.AllowCredentials()
+.AllowAnyOrigin()
+);
 
 app.UseAuthorization();
 
