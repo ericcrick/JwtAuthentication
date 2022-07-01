@@ -27,7 +27,7 @@ namespace JwtAuthentication.Controllers
             var user = new User(){
                 Username = userDto.Username,
                 Email = userDto.Email,
-                Password = userDto.Password
+                Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password)
             };
             await _userRepository.Create(user);
             return user;

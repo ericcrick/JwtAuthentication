@@ -14,7 +14,7 @@ namespace JwtAuthentication.Repositories
         public async Task<User> Create(User user)
         {
            await _usercontext.Users.AddAsync(user);
-          user.Id =  await _usercontext.SaveChangesAsync();
+           user.Id =  await _usercontext.SaveChangesAsync();
            return user;
         }
     }
