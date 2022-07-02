@@ -34,10 +34,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors(options => options
+.WithOrigins(new[]{"http://localhost:4000"})
 .AllowAnyHeader()
 .AllowAnyMethod()
 .AllowCredentials()
-.AllowAnyOrigin()
 );
 
 app.UseAuthorization();
