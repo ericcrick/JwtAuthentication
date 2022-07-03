@@ -3,6 +3,7 @@ using JwtAuthentication.Dtos;
 using JwtAuthentication.Repositories;
 using JwtAuthentication.Models;
 using JwtAuthentication.Helpers;
+using JwtAuthentication.Filters;
 
 namespace JwtAuthentication.Controllers
 {
@@ -30,6 +31,8 @@ namespace JwtAuthentication.Controllers
             await _userRepository.Create(user);
             return CreatedAtAction("New user created", user);
         }
+
+        [DebugResourceFilter]
         [HttpGet("find/{id}")]
         public async Task<ActionResult<ReadUserDto>> FindById(int id)
         {
