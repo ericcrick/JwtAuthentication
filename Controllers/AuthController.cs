@@ -22,14 +22,19 @@ namespace JwtAuthentication.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<ReadUserDto>> RegisterUser(CreateUserDto userDto)
         {
-            var user = new User()
-            {
-                Username = userDto.Username,
-                Email = userDto.Email,
-                Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password)
-            };
-            await _userRepository.Create(user);
-            return CreatedAtAction("New user created", user);
+            if(!string.IsNullOrWhiteSpace(userDto.Email)
+            && !string.IsNullOrWhiteSpace(userDto.Username)
+            && !string.IsNullOrWhiteSpace(userDto.Password)){
+                var user = new User()
+                {
+                    Username = userDto.Username,
+                    Email = userDto.Email,
+                    Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password)
+                };
+                await _userRepository.Create(user);
+                return CreatedAtAction("New user created", user);
+            }
+            return BadRequest("Invalid payload");
         }
 
         [DebugResourceFilter]
