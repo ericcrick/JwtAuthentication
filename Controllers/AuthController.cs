@@ -12,11 +12,13 @@ namespace JwtAuthentication.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        private readonly IJwtService _jwtService;
-        public AuthController(IUserRepository userRepository, IJwtService jwtService)
+        private readonly ITokenManager _itokenManager;
+        private readonly IPasswordManager _passwordManager;
+        public AuthController(IUserRepository userRepository, ITokenManager tokenManager, IPasswordManager passwordManager)
         {
-            _jwtService = jwtService;
             _userRepository = userRepository;
+            _itokenManager =tokenManager;
+            _passwordManager = passwordManager;
         }
         // register new user
         [HttpPost("register")]
@@ -29,7 +31,7 @@ namespace JwtAuthentication.Controllers
                 {
                     Username = userDto.Username,
                     Email = userDto.Email,
-                    Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password)
+                    Password = _passwordManager.HashPassword(userDto.Password)
                 };
                 await _userRepository.Create(user);
                 return CreatedAtAction("New user created", user);
@@ -51,43 +53,11 @@ namespace JwtAuthentication.Controllers
             };
         }
         // login user
-        [HttpPost("login")]
+        [HttpPost("authenticate/user")]
         public async Task<ActionResult<string>> LogInUser(LogInUserDto logInUserDto)
         {
-            var user = await _userRepository.GetByEmail(logInUserDto.Email);
-            if (user == null) return BadRequest(new { message = "Invalid Credentials" });
-            if (!BCrypt.Net.BCrypt.Verify(logInUserDto.Password, user.Password))
-            {
-                return BadRequest(new { message = "Invalid Credentials" });
-            }
-            var token = _jwtService.GenerateToken(user.Id);
-            Response.Cookies.Append("jwt", token, new CookieOptions{
-                HttpOnly = true
-            });
-            return Ok(new {
-                message = "Login Successfully"
-            });
-        }
-
-        [HttpGet("user")]
-        public async Task<ActionResult<ReadUserDto>> UserProfile(){
-            try
-            {
-                var jwt = Request.Cookies["jwt"];
-                var validateToken = _jwtService.VerifyToken(jwt!);
-                int userId = int.Parse(validateToken.Issuer);
-                var user = await _userRepository.FindById(userId);
-                var authenticatedUser = new ReadUserDto(){
-                    Id = user.Id,
-                    Username = user.Username,
-                    Email = user.Email,
-                };
-                return Ok(authenticatedUser);
-            }
-            catch (Exception )
-            {
-                return Unauthorized();
-            }
+            var authenticate = await _passwordManager.VerifyUserPassword(logInUserDto.Email, logInUserDto.Password);
+            return $"Authenticated successfully, {authenticate}";
         }
 
         [HttpPost("logout")]
