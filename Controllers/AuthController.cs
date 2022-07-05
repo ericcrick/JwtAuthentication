@@ -57,6 +57,7 @@ namespace JwtAuthentication.Controllers
         public async Task<ActionResult<string>> LogInUser(LogInUserDto logInUserDto)
         {
             var authenticate = await _passwordManager.VerifyUserPassword(logInUserDto.Email, logInUserDto.Password);
+            Console.WriteLine(authenticate);
             return $"Authenticated successfully, {authenticate}";
         }
 
