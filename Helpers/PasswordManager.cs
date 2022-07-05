@@ -17,10 +17,14 @@ namespace JwtAuthentication.Helpers
 
         public async Task<User> VerifyUserPassword(string email, string password){
             var user = await _repository.GetByEmail(email);
-            if(user == null) return null!;
-            var checkPassword = BCrypt.Net.BCrypt.Verify(password, user.Password);
-            if(!checkPassword) return null!;
-            return user;
+            if(user != null){
+                var checkPassword = BCrypt.Net.BCrypt.Verify(password, user.Password);
+                if(checkPassword) {
+                    return user;
+                }
+                return null!;
+            }
+            return null!;
         }
     }
 }
