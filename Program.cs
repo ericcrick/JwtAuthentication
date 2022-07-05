@@ -20,7 +20,21 @@ builder.Services.AddCors();
 // register db context
 builder.Services.AddDbContext<UserDbContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDbConnection")));
 builder.Services.AddScoped<IUserRepository,UserRepository>();
-builder.Services.AddScoped<IJwtService,JwtService>();
+builder.Services.AddScoped<IPasswordManager,PasswordManager>();
+builder.Services.AddScoped<ITokenManager,TokenManager>();
+
+// configure Authentication middleware
+builder.Services.AddAuthentication( auth => {
+    auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(authFilter => authFilter.TokenValidationParameters = new TokenValidationParameters{
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("keys")),
+    ValidateLifetime = true,
+    ValidateAudience = false,
+    ValidateIssuer = false,
+    ClockSkew = TimeSpan.Zero
+});
 
 var app = builder.Build();
 

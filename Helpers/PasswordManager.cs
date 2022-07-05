@@ -1,10 +1,9 @@
-using JwtAuthentication.Dtos;
 using JwtAuthentication.Models;
 using JwtAuthentication.Repositories;
 
 namespace JwtAuthentication.Helpers
 {
-    public class PasswordManager
+    public class PasswordManager: IPasswordManager
     {
         private readonly IUserRepository _repository;
         public PasswordManager(IUserRepository reposiory)
@@ -16,10 +15,10 @@ namespace JwtAuthentication.Helpers
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
-        public async Task<User> VerifyUserPassword(LogInUserDto userDto){
-            var user = await _repository.GetByEmail(userDto.Email);
+        public async Task<User> VerifyUserPassword(string email, string password){
+            var user = await _repository.GetByEmail(email);
             if(user == null) return null!;
-            var checkPassword = BCrypt.Net.BCrypt.Verify(userDto.Password, user.Password);
+            var checkPassword = BCrypt.Net.BCrypt.Verify(password, user.Password);
             if(!checkPassword) return null!;
             return user;
         }
