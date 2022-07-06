@@ -20,7 +20,8 @@ namespace JwtAuthentication.Helpers
         {
             var tokenDescriptor = new SecurityTokenDescriptor{
                 Subject = new ClaimsIdentity(new Claim[]{
-                    new Claim(ClaimTypes.Email, user.Email)
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, "Crick")
                 }),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256),
                 Expires = DateTime.UtcNow.AddMinutes(5),

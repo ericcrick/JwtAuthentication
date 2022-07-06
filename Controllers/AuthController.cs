@@ -3,7 +3,6 @@ using JwtAuthentication.Dtos;
 using JwtAuthentication.Repositories;
 using JwtAuthentication.Models;
 using JwtAuthentication.Helpers;
-using JwtAuthentication.Filters;
 using Microsoft.AspNetCore.Authorization;
 
 namespace JwtAuthentication.Controllers
@@ -40,7 +39,7 @@ namespace JwtAuthentication.Controllers
             return BadRequest("Invalid payload");
         }
 
-        [Authorize]
+        [Authorize(Roles ="Crick")]
         [HttpGet("find/{id}")]
         public async Task<ActionResult<ReadUserDto>> FindById(int id)
         {
@@ -73,14 +72,6 @@ namespace JwtAuthentication.Controllers
             return BadRequest( new {
                 message = "Invalid Credentials"
             });
-        }
-
-        [HttpPost("logout")]
-        public IActionResult LogOut(){
-            Response.Cookies.Delete("jwt");
-            return Ok(
-                new { message = "Success"}
-            );
         }
     }
 }
