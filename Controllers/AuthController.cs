@@ -4,6 +4,7 @@ using JwtAuthentication.Repositories;
 using JwtAuthentication.Models;
 using JwtAuthentication.Helpers;
 using JwtAuthentication.Filters;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JwtAuthentication.Controllers
 {
@@ -39,7 +40,7 @@ namespace JwtAuthentication.Controllers
             return BadRequest("Invalid payload");
         }
 
-        [DebugResourceFilter]
+        [Authorize]
         [HttpGet("find/{id}")]
         public async Task<ActionResult<ReadUserDto>> FindById(int id)
         {
@@ -62,7 +63,7 @@ namespace JwtAuthentication.Controllers
                 var verifyPassword = _passwordManager.VerifyUserPassword(logInUserDto.Password, user.Password);
                 if(verifyPassword){
                     return Ok(new {
-                        message = "Token generated"
+                        Token = _itokenManager.GenerateToken(user)
                     });
                 }
                 return BadRequest( new {

@@ -1,7 +1,6 @@
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using JwtAuthentication.Repositories;
 using Microsoft.IdentityModel.Tokens;
 using JwtAuthentication.Models;
 
@@ -9,14 +8,12 @@ namespace JwtAuthentication.Helpers
 {
     public class TokenManager: ITokenManager
     {
-        private readonly IUserRepository _userRepository;
         private readonly JwtSecurityTokenHandler tokenHandler;
         private readonly byte[] secretKey;
-        public TokenManager(IUserRepository userRepository)
+        public TokenManager()
         {
             tokenHandler = new JwtSecurityTokenHandler();
             secretKey = Encoding.ASCII.GetBytes("MySecurity#8keys");
-            _userRepository = userRepository;
         }
 
         public string GenerateToken(User user)
