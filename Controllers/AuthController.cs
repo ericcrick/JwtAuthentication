@@ -56,9 +56,22 @@ namespace JwtAuthentication.Controllers
         [HttpPost("authenticate/user")]
         public async Task<ActionResult<string>> LogInUser(LogInUserDto logInUserDto)
         {
-            var authenticate = await _passwordManager.VerifyUserPassword(logInUserDto.Email, logInUserDto.Password);
-            Console.WriteLine(authenticate);
-            return $"Authenticated successfully, {authenticate}";
+            var user = await _userRepository.GetByEmail(logInUserDto.Email);
+            if(user != null){
+                // verify password
+                var verifyPassword = _passwordManager.VerifyUserPassword(logInUserDto.Password, user.Password);
+                if(verifyPassword){
+                    return Ok(new {
+                        message = "Token generated"
+                    });
+                }
+                return BadRequest( new {
+                    message = "Invalid Credentials"
+                });
+            }
+            return BadRequest( new {
+                message = "Invalid Credentials"
+            });
         }
 
         [HttpPost("logout")]
