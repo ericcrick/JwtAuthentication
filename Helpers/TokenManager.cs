@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using JwtAuthentication.Repositories;
 using Microsoft.IdentityModel.Tokens;
+using JwtAuthentication.Models;
 
 namespace JwtAuthentication.Helpers
 {
@@ -18,11 +19,11 @@ namespace JwtAuthentication.Helpers
             _userRepository = userRepository;
         }
 
-        public string GenerateToken(string email, string password)
+        public string GenerateToken(User user)
         {
             var tokenDescriptor = new SecurityTokenDescriptor{
                 Subject = new ClaimsIdentity(new Claim[]{
-                    new Claim(ClaimTypes.Email, email)
+                    new Claim(ClaimTypes.Email, user.Email)
                 }),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256),
                 Expires = DateTime.UtcNow.AddMinutes(5),
